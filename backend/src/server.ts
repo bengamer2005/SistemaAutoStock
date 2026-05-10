@@ -5,7 +5,7 @@ dotenv.config()
 import DB from "./config/DBconfig"
 
 const env = {
-    PORT: Number(process.env.PORT ?? 3006),
+    PORT: Number(process.env.PORT ?? 3007),
     IP: process.env.IP ?? "localhost",
     FRONTEND: process.env.FRONTEND ?? "http://localhost:5173"
 }
@@ -32,7 +32,7 @@ connectDB()
 
 import authRoutes from "./routes/authRoute"
 import usersRoutes from "./routes/usersRoute"
-import productsroutes from "./routes/productsriute"
+import productsroutes from "./routes/productsRoute"
 import movementsRoute from "./routes/movementsRoute"
 import categoriesRoute from "./routes/categoriesRoute"
 import providersRoute from "./routes/providersRoute"

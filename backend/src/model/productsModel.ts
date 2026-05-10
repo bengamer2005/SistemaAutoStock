@@ -21,7 +21,7 @@ export interface ProductsAttributes {
 }
 
 // atributo que es opcional al momento de crear un nuevo Users
-export interface ProductsCreationAttributes extends Optional<ProductsAttributes, "categories_id" | "updated_at" | "updated_by" > {}
+export interface ProductsCreationAttributes extends Optional<ProductsAttributes, "products_id" | "categories_id" | "updated_at" | "updated_by" > {}
 
 // modelo tipado de Users
 class ProductsModel extends Model<ProductsAttributes, ProductsCreationAttributes> implements ProductsAttributes {

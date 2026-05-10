@@ -1,8 +1,8 @@
 import { DataTypes, Optional, Model } from "sequelize"
 import DB from "../config/DBconfig"
 
-// atributos que tiene la tabla Users
-export interface ProductsAttributes {
+// atributos que tiene la tabla ProductsBrands
+export interface ProductsBrandsAttributes {
     products_brands_id: number,
     brand_name: string,
     created_by: number,
@@ -11,11 +11,11 @@ export interface ProductsAttributes {
     updated_at: Date
 }
 
-// atributo que es opcional al momento de crear un nuevo Users
-export interface ProductsCreationAttributes extends Optional<ProductsAttributes, "products_brands_id" | "updated_at" | "updated_by" > {}
+// atributo que es opcional al momento de crear un nuevo ProductsBrands
+export interface ProductsBrandsCreationAttributes extends Optional<ProductsBrandsAttributes, "products_brands_id" | "updated_at" | "updated_by" > {}
 
-// modelo tipado de Users
-class ProductsModel extends Model<ProductsAttributes, ProductsCreationAttributes> implements ProductsAttributes {
+// modelo tipado de ProductsBrands
+class ProductsBrandsModel extends Model<ProductsBrandsAttributes, ProductsBrandsCreationAttributes> implements ProductsBrandsAttributes {
     public products_brands_id!: number
     public brand_name!: string
     public created_by!: number
@@ -25,7 +25,7 @@ class ProductsModel extends Model<ProductsAttributes, ProductsCreationAttributes
 }
 
 // inicializar el modelo con sus atributos y opciones
-ProductsModel.init({
+ProductsBrandsModel.init({
     products_brands_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -42,4 +42,4 @@ ProductsModel.init({
     timestamps: false
 })
 
-export default ProductsModel
+export default ProductsBrandsModel

@@ -10,7 +10,7 @@ export interface CategoriesAttributes {
 }
 
 // atributo que es opcional al momento de crear un nuevo Users
-export interface CategoriesCreationAttributes extends Optional<CategoriesAttributes, "categories_id" > {}
+export interface CategoriesCreationAttributes extends Optional<CategoriesAttributes, "categories_id" | "parent_id" > {}
 
 // modelo tipado de Users
 class CategoriesModel extends Model<CategoriesAttributes, CategoriesCreationAttributes> implements CategoriesAttributes {

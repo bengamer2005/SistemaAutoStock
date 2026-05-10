@@ -3,7 +3,9 @@ import cors from "cors"
 import dotenv from "dotenv"
 dotenv.config()
 import DB from "./config/DBconfig"
-import UsersRoutes from "./routes/usersRoute"
+import authRoutes from "./routes/authRoute"
+import usersRoutes from "./routes/usersRoute"
+import productsroutes from "./routes/productsriute"
 
 const env = {
     PORT: Number(process.env.PORT ?? 3006),
@@ -32,7 +34,9 @@ const connectDB = async () => {
 connectDB()
 
 // exponemos los endpoints
-app.use("/sistemaautostock/api", UsersRoutes)
+app.use("/autostock/api/auth", authRoutes)
+app.use("/autostock/api/users", usersRoutes)
+app.use("/autostock/api/products", productsroutes)
 
 // levantar servidor
 app.listen(env.PORT, env.IP, () => {

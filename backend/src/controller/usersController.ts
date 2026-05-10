@@ -26,7 +26,7 @@ type UsersUpdate = {
 // obtiene todos los usuarios
 export const getUsers = async (req: Request, res: Response) => {
     try {
-        const allUsers = await DB.query("SELECT * FROM xv_users",{
+        const allUsers = await DB.query("SELECT * FROM vw_users",{
             type: QueryTypes.SELECT
         })
 

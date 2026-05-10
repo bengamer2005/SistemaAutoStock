@@ -1,97 +1,130 @@
 import { Request, Response } from "express"
-import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
+import { QueryTypes } from "sequelize"
+import DB from "../config/DBconfig"
 import UsersModel from "../model/usersModel"
 
-// registro de un usuario
-export const registerUser = async (req: Request, res: Response) => {
+// types
+type UsersCreate = {
+    name: string
+    last_name: string
+    email: string
+    password: string
+    roles_id: number
+    active: boolean
+    created_at: Date
+}
+
+type UsersUpdate = {
+    name: string
+    last_name: string
+    password: string
+    roles_id: number
+    updated_by: number
+    updated_at: Date
+}
+
+// obtiene todos los usuarios
+export const getUsers = async (req: Request, res: Response) => {
     try {
-        const { name, last_name, email, password, roles_id } = req.body
-
-        // si no cuenta con todos los campos lanzamos error
-        if(!name || !last_name || !email || !password || !roles_id) {
-            return res.status(409).json({message: "Faltan campos por llenar"})
-        }
-
-        // si ya existe un usuario con mismo correo lanzamos error
-        const findEmail = await UsersModel.findOne({
-            where: { email }
-        })
-        
-        if(findEmail) {
-            return res.status(401).json({message: "Email ya registrado, favor de iniciar sesion"})
-        }
-
-        // hashear contraseña
-        const salt = await bcrypt.genSalt(10)
-        const hashedPassword = await bcrypt.hash(password, salt)
-
-        // se hace el post del usuario
-        const userInfo = await UsersModel.create({ 
-            name, 
-            last_name, 
-            email, 
-            password: hashedPassword, 
-            active: true, 
-            roles_id,
-            created_at: new Date()
+        const allUsers = await DB.query("SELECT * FROM xv_users",{
+            type: QueryTypes.SELECT
         })
 
-        res.status(200).json({message: "Usuario registrado exitosamente", user: userInfo})
-
+        res.status(200).json(allUsers)
     } catch (error) {
-        console.error("Error al registrar usuario:", error)
-        res.status(500).json({message: "Internal server error"})
+        console.error("Error al obtener usuarios:", error)
+        res.status(500).json({
+            error: "Error al obtener usuarios"
+        })
     }
 }
 
-// login de un usuario
-export const loginUser = async (req: Request, res: Response) => {
-    try {
-        const { email, password } = req.body
+// crea un usuario nuevo
+export const createUsers = async (req: Request, res: Response) => {
+    const body: UsersCreate = req.body
+    const transaction = await DB.transaction()
 
-        // si no completa todos los campos lanzamos error
-        if(!email || !password) {
-            return res.status(400).json({message: "Faltan campos por llenar"})
+    try {
+        const newUser = await UsersModel.create(body, {
+            transaction
+        })
+
+        await transaction.commit()
+
+        res.status(201).json({
+            message: "Usuario creado exitosamente",
+            data: newUser
+        })
+    } catch (error) {
+        await transaction.rollback()
+
+        console.error("Error al crear el usuario:", error)
+        res.status(500).json({ error: "Error al crear el usuario" })
+    }
+}
+
+// actualiza un usuario
+export const updateUsers = async (req: Request, res: Response) => {
+    const body: UsersUpdate = req.body
+    const id = Number(req.params.id)
+    const transaction = await DB.transaction()
+
+    try {
+        const userExists = await UsersModel.findByPk(id)
+
+        if(!userExists) {
+            await transaction.rollback()
+            return res.status(404).json({ message: "Usuario no encontrado" })
         }
 
-        // buscamos si existe el user
-        const user = await UsersModel.findOne({
-            where: { email }
+        await UsersModel.update(body, {
+            where: { users_id: id },
+            transaction
         })
+
+        await transaction.commit()
+
+        res.status(200).json({ message: "Usuario actualizado exitosamente" })
+
+    } catch (error) {
+        await transaction.rollback()
+
+        console.error("Error al actualizar el usuario:", error)
+        res.status(500).json({ error: "Error al actualizar el usuario" })
+    }
+}
+
+// activar o inactivar usuario
+export const deactivateUser = async (req: Request, res: Response) => {
+    const id = Number(req.params.id)
+    const transaction = await DB.transaction()
+
+    try {
+        const user = await UsersModel.findByPk(id)
 
         if(!user) {
-            return res.status(401).json({
-                message: "Credenciales invalidas"
-            })
+            await transaction.rollback()
+            return res.status(404).json({ message: "Usuario no encontrado" })
         }
 
-        // verificamos la contraseña
-        // const comparePassword = await bcrypt.compare(password, user.password)
-        const comparePassword = password === user.password
-
-        if(!comparePassword) {
-            return res.status(401).json({message: "Credenciales invalidas"})
-        }
-
-        if(!process.env.JWT_SECRET){
-            throw new Error("JWT_SECRET not defined")
-        }
-
-        // generamos el token
-        const token = jwt.sign({
-            id: user.users_id, 
-            email: user.email,
-            role: user.roles_id
-        }, process.env.JWT_SECRET, {
-            expiresIn: "10h"
+        // cambia el estado actual
+        await user.update({
+            active: !user.active
+        }, {
+            transaction
         })
 
-        const { password: _, ...userData } = user.dataValues
+        await transaction.commit()
 
-        res.status(200).json({message: "Login exitoso: ", token, user: userData})
+        res.status(200).json({
+            message: `Usuario ${user.active ? "activado" : "desactivado"} exitosamente`,
+            active: user.active
+        })
+
     } catch (error) {
-        console.error("Error al hacer login:", error)
-        res.status(500).json({message: "Internal server error"})
+        await transaction.rollback()
+
+        console.error("Error al actualizar el estatus del usuario:", error)
+        res.status(500).json({ error: "Error al actualizar el estatus del usuario" })
     }
 }

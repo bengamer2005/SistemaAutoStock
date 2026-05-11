@@ -1,31 +1,33 @@
-import { BrowserRouter, Route, Routes } from "react-router"
+import { BrowserRouter, Navigate, Route, Routes } from "react-router"
 import { Toaster } from "sonner"
-import ProtectedRoute from "./shared/components/layout/protectedRoute"
-// pages
+import Login from "./feature/auth/loginPage"
+import MainPage from "./feature/dashboard/MainPage"
 import NotFound from "./shared/404Page"
-// estilos
-import "./index.css"
+
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    const token = localStorage.getItem("token")
+    return token ? children : <Navigate to="/" replace />
+}
 
 function App() {
     return (
         <>
             <BrowserRouter>
                 <Routes>
-                    <Route path="/" element={<Loging/>}/>
-                    <Route path="*" element={<NotFound/>}/>
-                    <Route element={<ProtectedRoute/>}>
-                        <Route path="/main" element={<MainPage/>}/>
-                    </Route>
+                    <Route path="/" element={<Login />} />
+                    <Route
+                        path="/main"
+                        element={
+                            <ProtectedRoute>
+                                <MainPage />
+                            </ProtectedRoute>
+                        }
+                    />
+                    <Route path="*" element={<NotFound />} />
                 </Routes>
             </BrowserRouter>
 
-            <Toaster 
-                position="bottom-right"
-                expand={false}
-                richColors
-                closeButton
-                duration={3000}
-            />
+            <Toaster position="bottom-right" richColors closeButton duration={3000} />
         </>
     )
 }

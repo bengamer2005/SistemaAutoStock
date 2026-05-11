@@ -284,6 +284,7 @@ h2 {
     background: transparent;
     text-align: left;
     font-weight: 700;
+    text-decoration: none;
 }
 
 .nav-item:hover,
@@ -554,8 +555,36 @@ tr:last-child td {
     }
 
     .sidebar {
-        position: static;
+        position: sticky;
+        top: 0;
+        z-index: 40;
         height: auto;
+        padding: 12px 16px;
+        gap: 12px;
+    }
+
+    .sidebar-brand {
+        justify-content: center;
+    }
+
+    .sidebar nav {
+        display: flex;
+        gap: 8px;
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: thin;
+    }
+
+    .nav-item {
+        width: auto;
+        min-width: max-content;
+        justify-content: center;
+        padding: 10px 12px;
+    }
+
+    .nav-item.logout {
+        margin-top: 0;
+        justify-content: center;
     }
 
     .content-grid {
@@ -567,11 +596,19 @@ tr:last-child td {
         align-items: stretch;
         flex-direction: column;
     }
+
+    .topbar {
+        gap: 12px;
+    }
+
+    .user-pill {
+        align-self: flex-start;
+    }
 }
 
 @media (max-width: 620px) {
     .workspace {
-        padding: 18px;
+        padding: 16px;
     }
 
     .content-grid,
@@ -586,5 +623,75 @@ tr:last-child td {
     .toolbar > button,
     .segmented {
         flex: 1;
+    }
+
+    .sidebar {
+        padding: 10px;
+    }
+
+    .sidebar-brand span {
+        display: none;
+    }
+
+    .nav-item {
+        min-width: 44px;
+        min-height: 44px;
+        padding: 10px;
+    }
+
+    .nav-item svg {
+        flex: 0 0 auto;
+    }
+
+    .nav-item:not(.logout) {
+        font-size: 0;
+        gap: 0;
+    }
+
+    .nav-item.logout {
+        font-size: 0;
+        gap: 0;
+    }
+
+    .search-box,
+    .toolbar,
+    .primary-button,
+    .secondary-button {
+        width: 100%;
+    }
+
+    .segmented button {
+        flex: 1;
+        padding-inline: 10px;
+    }
+
+    .panel {
+        padding: 14px;
+        border-radius: 12px;
+    }
+
+    .table-wrap {
+        margin-inline: -2px;
+        border-radius: 10px;
+    }
+
+    th,
+    td {
+        padding: 11px 12px;
+    }
+
+    .modal-backdrop {
+        align-items: end;
+        padding: 0;
+    }
+
+    .modal {
+        width: 100%;
+        max-height: 92vh;
+        border-radius: 14px 14px 0 0;
+    }
+
+    h1 {
+        font-size: 1.65rem;
     }
 }

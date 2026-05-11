@@ -1,18 +1,20 @@
 import { useState } from "react"
-import { Navigate, useNavigate } from "react-router"
+import { Navigate, useLocation, useNavigate } from "react-router"
 import { ArrowRight, Eye, EyeOff, Lock, Mail, PackageCheck } from "lucide-react"
 import { toast } from "sonner"
 import { loginRequest } from "./services/authService"
 
 const Login = () => {
     const navigate = useNavigate()
+    const location = useLocation()
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [showPassword, setShowPassword] = useState(false)
     const [isLoading, setIsLoading] = useState(false)
+    const from = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname ?? "/main/dashboard"
 
     const token = localStorage.getItem("token")
-    if (token) return <Navigate to="/main" replace />
+    if (token) return <Navigate to={from} replace />
 
     const handleLogin = async (event: React.FormEvent) => {
         event.preventDefault()
@@ -23,7 +25,7 @@ const Login = () => {
             localStorage.setItem("token", data.token)
             localStorage.setItem("user", JSON.stringify(data.user))
             toast.success("Sesion iniciada")
-            navigate("/main")
+            navigate(from, { replace: true })
         } catch (error) {
             const message = error instanceof Error ? error.message : "Error al iniciar sesion"
             toast.error(message)

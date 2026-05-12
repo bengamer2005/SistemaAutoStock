@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from "express"
 import jwt from "jsonwebtoken"
-import rateLimit from "express-rate-limit"
 import UsersModel from "../model/usersModel"
 
 export interface AuthRequest extends Request {
@@ -93,14 +92,3 @@ export const validateRequired = (fields: string[]) => {
         next()
     }
 }
-
-// Limita intentos de login para proteger contra ataques de fuerza bruta
-export const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
-    max: 3,                   
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: {
-        message: "Demasiados intentos de inicio de sesión. Intenta de nuevo en 15 minutos"
-    }
-})

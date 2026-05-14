@@ -1,0 +1,3 @@
+SELECT check_clause
+FROM information_schema.check_constraints
+WHERE constraint_name = 'products_movements_movement_type_check';

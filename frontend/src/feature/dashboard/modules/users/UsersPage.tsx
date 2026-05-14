@@ -3,7 +3,7 @@ import { SectionPanel } from "../../components/sectionPanel"
 import { useDashboard } from "../../context"
 
 const UsersPage = () => {
-    const { query, setQuery, isLoading, catalogKind, setCatalogKind, users, loadData, setModalMode, toggleStatus } = useDashboard()
+    const { query, setQuery, isLoading, catalogKind, setCatalogKind, users, loadData, setModalMode, openUserModal, toggleStatus } = useDashboard()
     const normalizedQuery = query.toLowerCase()
     const filteredUsers = users.filter((item) => `${item.name} ${item.last_name} ${item.email} ${item.role_name ?? ""}`.toLowerCase().includes(normalizedQuery))
 
@@ -17,7 +17,7 @@ const UsersPage = () => {
                     ["Correo", (item) => item.email],
                     ["Rol", (item) => item.role_name ?? item.roles_id ?? item.role_id ?? "-"],
                     ["Estatus", (item) => <StatusBadge active={item.active !== false} />],
-                    ["Acciones", (item) => <RowActions onToggle={() => toggleStatus(`/users/${item.users_id}/status`, "PUT")} />],
+                    ["Acciones", (item) => <RowActions onEdit={() => openUserModal(item)} onToggle={() => toggleStatus(`/users/${item.users_id}/status`, "PUT")} />],
                 ]}
             />
         </SectionPanel>

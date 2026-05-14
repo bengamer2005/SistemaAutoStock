@@ -14,7 +14,7 @@ export const loginRequest = async (data: LoginPayload): Promise<LoginResponse> =
     const result = await response.json()
 
     if (!response.ok) {
-        throw new Error(result.message || "No se pudo iniciar sesion")
+        throw new Error(result.message || "No se pudo iniciar sesión")
     }
 
     return result

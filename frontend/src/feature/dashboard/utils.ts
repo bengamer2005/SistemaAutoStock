@@ -15,7 +15,7 @@ export const modalTitle = (activeTab: Tab, catalogKind: CatalogKind, modalMode: 
     if (activeTab === "products") return modalMode === "edit" ? "Editar producto" : "Nuevo producto"
     if (activeTab === "providers") return modalMode === "edit" ? "Editar proveedor" : "Nuevo proveedor"
     if (activeTab === "warehouses") return modalMode === "edit" ? "Editar almacen" : "Nuevo almacen"
-    if (activeTab === "users") return "Nuevo usuario"
+    if (activeTab === "users") return modalMode === "edit" ? "Editar usuario" : "Nuevo usuario"
     return catalogKind === "brands" ? "Marca" : "Categoria"
 }
 

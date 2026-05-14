@@ -44,10 +44,10 @@ export const isAdmin = (req: AuthRequest, res: Response, next: NextFunction): vo
     next()
 }
 
-// Verifica que el usuario tenga rol de Operador o Administrador (roles_id = 1 o 2)
+// Verifica que el usuario tenga rol de Operador (roles_id = 2). Solo el Operador puede registrar movimientos.
 export const isOperator = (req: AuthRequest, res: Response, next: NextFunction): void => {
-    if (!req.user || req.user.role > 2) {
-        res.status(403).json({ message: "Acceso restringido. Se requiere rol Operador o Administrador" })
+    if (!req.user || req.user.role !== 2) {
+        res.status(403).json({ message: "Acceso restringido. Se requiere rol Operador" })
         return
     }
     next()
@@ -96,7 +96,7 @@ export const validateRequired = (fields: string[]) => {
 
 // Limita intentos de login para proteger contra ataques de fuerza bruta
 export const loginLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, 
+    windowMs: 1* 60 * 1000, 
     max: 3,                   
     standardHeaders: true,
     legacyHeaders: false,

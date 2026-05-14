@@ -16,9 +16,9 @@ const CatalogsPage = () => {
                     rows={filteredCategories}
                     empty="No se encontraron categorias."
                     columns={[
-                        ["Categoria", (item) => item.name],
-                        ["Descripcion", (item) => item.description || "-"],
-                        ["Padre", (item) => categories.find((category) => category.categories_id === item.parent_id)?.name ?? "-"],
+                        ["Categoría", (item) => item.name],
+                        ["Descripción", (item) => item.description || "-"],
+                        ["Subcategoría de", (item) => categories.find((category) => category.categories_id === item.parent_id)?.name ?? "-"],
                         [
                             "Acciones",
                             (item) => (

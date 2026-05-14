@@ -48,6 +48,8 @@ const MainPage = () => {
     const loadData = async () => {
         setIsLoading(true)
         try {
+            const isAdmin = user?.roles_id === 1
+
             const [productData, providerData, categoryData, brandData, warehouseData, movementData, userData] = await Promise.all([
                 apiRequest<Product[]>("/products"),
                 apiRequest<Provider[]>("/providers"),
@@ -55,7 +57,7 @@ const MainPage = () => {
                 apiRequest<Brand[]>("/brands"),
                 apiRequest<WarehouseType[]>("/warehouses"),
                 apiRequest<Movement[]>("/movements"),
-                apiRequest<UserRecord[]>("/users"),
+                isAdmin ? apiRequest<UserRecord[]>("/users") : Promise.resolve([] as UserRecord[]),
             ])
 
             setProducts(productData)
@@ -114,6 +116,23 @@ const MainPage = () => {
     const openSimpleModal = (form: SimpleForm) => {
         setSimpleForm(form)
         setModalMode("edit")
+    }
+
+    const openUserModal = (userRecord?: UserRecord) => {
+        if (userRecord) {
+            setUserForm({
+                users_id: userRecord.users_id,
+                name: userRecord.name,
+                last_name: userRecord.last_name,
+                email: userRecord.email,
+                password: "",
+                roles_id: String(userRecord.roles_id ?? userRecord.role_id ?? "1"),
+            })
+            setModalMode("edit")
+            return
+        }
+        setUserForm(emptyUser)
+        setModalMode("create")
     }
 
     const saveProduct = async () => {
@@ -195,25 +214,39 @@ const MainPage = () => {
 
     const saveUser = async () => {
         try {
-            await apiRequest("/users", {
-                method: "POST",
-                body: { ...userForm, roles_id: Number(userForm.roles_id), active: true, created_at: new Date() },
-            })
-            toast.success("Usuario creado")
+            if (userForm.users_id) {
+                const body: Record<string, unknown> = { name: userForm.name, last_name: userForm.last_name, roles_id: Number(userForm.roles_id) }
+                if (userForm.password) body.password = userForm.password
+                await apiRequest(`/users/${userForm.users_id}`, { method: "PUT", body })
+                toast.success("Usuario actualizado")
+            } else {
+                await apiRequest("/users", {
+                    method: "POST",
+                    body: { ...userForm, roles_id: Number(userForm.roles_id), active: true, created_at: new Date() },
+                })
+                toast.success("Usuario creado")
+            }
             closeModal()
             loadData()
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "No se pudo crear el usuario")
+            toast.error(error instanceof Error ? error.message : "No se pudo guardar el usuario")
         }
     }
 
     const saveMovement = async () => {
+        const pid = Number(movementForm.products_id)
+        const qty = Number(movementForm.quantity)
+        if (!pid || qty < 1) {
+            toast.error("Selecciona un producto y una cantidad válida")
+            return
+        }
+        const isEntry = movementForm.movement_type === "ENTRY"
         try {
-            await apiRequest(`/movements/${movementForm.movement_type === "ENTRY" ? "entry" : "exit"}`, {
+            await apiRequest(`/movements/${isEntry ? "entry" : "exit"}`, {
                 method: "POST",
-                body: { products_id: Number(movementForm.products_id), quantity: Number(movementForm.quantity), created_by: currentUserId(), created_at: new Date() },
+                body: { products_id: pid, quantity: qty, created_by: currentUserId(), created_at: new Date() },
             })
-            toast.success(movementForm.movement_type === "ENTRY" ? "Entrada registrada" : "Salida registrada")
+            toast.success(isEntry ? "Entrada registrada" : "Salida registrada")
             closeModal()
             loadData()
         } catch (error) {
@@ -273,6 +306,7 @@ const MainPage = () => {
                 loadData,
                 openProductModal,
                 openSimpleModal,
+                openUserModal,
                 saveProduct,
                 saveSimpleResource,
                 saveUser,

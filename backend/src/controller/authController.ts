@@ -66,8 +66,11 @@ export const loginUser = async (req: Request, res: Response) => {
             })
         }
 
+        if(!user.active) {
+            return res.status(403).json({ message: "Tu cuenta ha sido desactivada. Contacta al administrador" })
+        }
+
         // verificamos la contraseña
-        // const comparePassword = await bcrypt.compare(password, user.password)
         const comparePassword = password === user.password
 
         if(!comparePassword) {

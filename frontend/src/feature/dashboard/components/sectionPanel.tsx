@@ -19,7 +19,7 @@ export const SectionPanel = ({
     query: string
     setQuery: (value: string) => void
     isLoading: boolean
-    onCreate: () => void
+    onCreate?: () => void
     onRefresh: () => void
     children: ReactNode
 }) => (

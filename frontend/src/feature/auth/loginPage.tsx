@@ -24,10 +24,10 @@ const Login = () => {
             const data = await loginRequest({ email, password })
             localStorage.setItem("token", data.token)
             localStorage.setItem("user", JSON.stringify(data.user))
-            toast.success("Sesion iniciada")
+            toast.success("Sesión iniciada")
             navigate(from, { replace: true })
         } catch (error) {
-            const message = error instanceof Error ? error.message : "Error al iniciar sesion"
+            const message = error instanceof Error ? error.message : "Error al iniciar sesión"
             toast.error(message)
         } finally {
             setIsLoading(false)
@@ -36,7 +36,7 @@ const Login = () => {
 
     return (
         <main className="login-shell">
-            <section className="login-panel" aria-label="Inicio de sesion">
+            <section className="login-panel" aria-label="Inicio de sesión">
                 <div className="brand-mark">
                     <PackageCheck size={30} />
                 </div>

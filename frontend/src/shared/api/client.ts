@@ -35,6 +35,16 @@ export const apiRequest = async <T>(path: string, options: RequestOptions = {}):
     return payload as T
 }
 
+export const currentUserRole = (): number => {
+    const stored = localStorage.getItem("user")
+    if (!stored) return 99
+    try {
+        return Number(JSON.parse(stored)?.roles_id ?? 99)
+    } catch {
+        return 99
+    }
+}
+
 export const currentUserId = () => {
     const storedUser = localStorage.getItem("user")
     if (!storedUser) return 1

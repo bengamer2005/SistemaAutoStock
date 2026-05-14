@@ -3,6 +3,7 @@ import { QueryTypes } from "sequelize"
 import DB from "../config/DBconfig"
 import ProductsModel from "../model/productsModel"
 import ProductsMovementsModel from "../model/productsMovementsModel"
+import type { AuthRequest } from "../middleware/authMiddleware"
 
 // types
 type MovementCreate = {
@@ -26,12 +27,15 @@ export const validateStock = async (
 }
 
 // GET
-// obtiene todos los movimientos
-export const getMovements = async (req: Request, res: Response) => {
+// obtiene todos los movimientos (operadores solo ven los suyos)
+export const getMovements = async (req: AuthRequest, res: Response) => {
     try {
-        const movements = await DB.query("SELECT * FROM vw_products_movements ORDER BY created_at DESC", {
-            type: QueryTypes.SELECT
-        })
+        const userRole = req.user?.role
+        const userId = req.user?.id
+
+        const movements = userRole === 2
+            ? await DB.query("SELECT * FROM vw_products_movements WHERE created_by = :userId ORDER BY created_at DESC", { replacements: { userId }, type: QueryTypes.SELECT })
+            : await DB.query("SELECT * FROM vw_products_movements ORDER BY created_at DESC", { type: QueryTypes.SELECT })
 
         res.status(200).json(movements)
     } catch (error) {
@@ -65,43 +69,37 @@ export const getMovementsByProduct = async (req: Request, res: Response) => {
 // entrada de inventario
 export const createEntryMovement = async (req: Request, res: Response) => {
     const body: MovementCreate = req.body
-    const transaction = await DB.transaction()
 
     try {
+        if (!body.quantity || Number(body.quantity) <= 0) {
+            return res.status(400).json({ message: "La cantidad debe ser mayor a cero" })
+        }
+
         const product = await ProductsModel.findByPk(body.products_id)
 
-        if(!product) {
-            await transaction.rollback()
+        if (!product) {
             return res.status(404).json({ message: "Producto no encontrado" })
         }
 
-        // crear movimiento
-        const movement = await ProductsMovementsModel.create({
-            ...body,
-            movement_type: "ENTRY"
-        }, {
-            transaction
+        await ProductsMovementsModel.create({
+            products_id: body.products_id,
+            quantity: body.quantity,
+            movement_type: "entrada",
+            created_by: body.created_by,
+            created_at: body.created_at,
         })
 
-        // actualizar stock
-        await product.update({
-            stock: product.stock + body.quantity
-        }, {
-            transaction
-        })
+        await ProductsModel.update(
+            { stock: Number(product.stock) + Number(body.quantity) },
+            { where: { products_id: body.products_id } }
+        )
 
-        await transaction.commit()
-
-        res.status(201).json({
-            message: "Entrada registrada exitosamente",
-            data: movement
-        })
+        res.status(201).json({ message: "Entrada registrada exitosamente" })
 
     } catch (error) {
-        await transaction.rollback()
-
         console.error("Error al registrar entrada:", error)
-        res.status(500).json({ error: "Error al registrar entrada" })
+        const msg = error instanceof Error ? error.message : "Error al registrar entrada"
+        res.status(500).json({ error: msg })
     }
 }
 
@@ -109,52 +107,44 @@ export const createEntryMovement = async (req: Request, res: Response) => {
 // salida de inventario
 export const createExitMovement = async (req: Request, res: Response) => {
     const body: MovementCreate = req.body
-    const transaction = await DB.transaction()
 
     try {
+        if (!body.quantity || Number(body.quantity) <= 0) {
+            return res.status(400).json({ message: "La cantidad debe ser mayor a cero" })
+        }
+
         const product = await ProductsModel.findByPk(body.products_id)
 
-        if(!product) {
-            await transaction.rollback()
+        if (!product) {
             return res.status(404).json({ message: "Producto no encontrado" })
         }
 
-        // validar stock
-        const hasStock = await validateStock(
-            body.products_id,
-            body.quantity
-        )
+        const hasStock = Number(product.stock) >= Number(body.quantity)
 
-        if(!hasStock) {
-            await transaction.rollback()
-            return res.status(400).json({ message: "Stock insuficiente" })
+        if (!hasStock) {
+            return res.status(400).json({
+                message: `La cantidad solicitada (${body.quantity}) supera el stock disponible (${product.stock})`
+            })
         }
 
-        // crear movimiento
-        const movement = await ProductsMovementsModel.create({
-            ...body,
-            movement_type: "EXIT"
-        }, {
-            transaction
+        await ProductsMovementsModel.create({
+            products_id: body.products_id,
+            quantity: body.quantity,
+            movement_type: "salida",
+            created_by: body.created_by,
+            created_at: body.created_at,
         })
 
-        // descontar stock
-        await product.update({
-            stock: product.stock - body.quantity
-        }, {
-            transaction
-        })
+        await ProductsModel.update(
+            { stock: Number(product.stock) - Number(body.quantity) },
+            { where: { products_id: body.products_id } }
+        )
 
-        await transaction.commit()
+        res.status(201).json({ message: "Salida registrada exitosamente" })
 
-        res.status(201).json({
-            message: "Salida registrada exitosamente",
-            data: movement
-        })
     } catch (error) {
-        await transaction.rollback()
-
         console.error("Error al registrar salida:", error)
-        res.status(500).json({ error: "Error al registrar salida" })
+        const msg = error instanceof Error ? error.message : "Error al registrar salida"
+        res.status(500).json({ error: msg })
     }
 }

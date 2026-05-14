@@ -26,9 +26,13 @@ type UsersUpdate = {
 // obtiene todos los usuarios
 export const getUsers = async (req: Request, res: Response) => {
     try {
-        const allUsers = await DB.query("SELECT * FROM vw_users",{
-            type: QueryTypes.SELECT
-        })
+        const allUsers = await DB.query(`
+            SELECT u.users_id, u.name, u.last_name, u.email, u.roles_id, u.active, u.created_at,
+                   r.name AS role_name
+            FROM users u
+            LEFT JOIN roles r ON u.roles_id = r.roles_id
+            ORDER BY u.users_id ASC
+        `, { type: QueryTypes.SELECT })
 
         res.status(200).json(allUsers)
     } catch (error) {
@@ -45,7 +49,14 @@ export const createUsers = async (req: Request, res: Response) => {
     const transaction = await DB.transaction()
 
     try {
-        const newUser = await UsersModel.create(body, {
+        const emailExists = await UsersModel.findOne({ where: { email: body.email } })
+
+        if (emailExists) {
+            await transaction.rollback()
+            return res.status(409).json({ error: "El correo electrónico ya está registrado" })
+        }
+
+        const newUser = await UsersModel.create({ ...body, active: true }, {
             transaction
         })
 

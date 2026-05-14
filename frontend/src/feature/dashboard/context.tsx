@@ -28,6 +28,7 @@ export type DashboardContextValue = {
     loadData: () => Promise<void>
     openProductModal: (product?: Product) => void
     openSimpleModal: (form: SimpleForm) => void
+    openUserModal: (user?: UserRecord) => void
     saveProduct: () => Promise<void>
     saveSimpleResource: () => Promise<void>
     saveUser: () => Promise<void>

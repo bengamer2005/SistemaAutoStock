@@ -1,5 +1,5 @@
 import type { ElementType, ReactNode } from "react"
-import { Pencil, Plus, RefreshCcw, Search, Trash2 } from "lucide-react"
+import { Pencil, Plus, RefreshCcw, Search, Trash2, X, PackageSearch } from "lucide-react"
 import type { Product } from "../../../shared/types/inventory"
 import type { CatalogKind, Tab } from "../types"
 
@@ -13,7 +13,7 @@ export const HeaderActions = ({
     activeTab: Tab
     catalogKind: CatalogKind
     setCatalogKind: (kind: CatalogKind) => void
-    onCreate: () => void
+    onCreate?: () => void
     onRefresh: () => void
 }) => (
     <div className="toolbar">
@@ -31,10 +31,12 @@ export const HeaderActions = ({
             <RefreshCcw size={16} />
             Actualizar
         </button>
-        <button className="primary-button compact" onClick={onCreate}>
-            <Plus size={17} />
-            Nuevo
-        </button>
+        {onCreate && (
+            <button className="primary-button compact" onClick={onCreate}>
+                <Plus size={17} />
+                Nuevo
+            </button>
+        )}
     </div>
 )
 
@@ -93,7 +95,10 @@ export const DataTable = <T,>({
                 ))}
                 {rows.length === 0 && (
                     <tr>
-                        <td colSpan={columns.length} className="empty-cell">{empty}</td>
+                        <td colSpan={columns.length} className="empty-cell">
+                            <PackageSearch size={32} strokeWidth={1.5} style={{ margin: "0 auto 8px", display: "block", opacity: 0.4 }} />
+                            {empty}
+                        </td>
                     </tr>
                 )}
             </tbody>
@@ -126,18 +131,21 @@ export const StatusBadge = ({ active }: { active: boolean }) => (
 )
 
 export const StockBadge = ({ product }: { product: Product }) => {
-    const isLow = Number(product.stock ?? 0) <= Number(product.min_stock ?? 0)
-    return <span className={isLow ? "badge warning" : "badge success"}>{product.stock ?? 0}</span>
+    const stock = Number(product.stock ?? 0)
+    const minStock = Number(product.min_stock ?? 0)
+    if (stock === 0) return <span className="badge danger">Agotado</span>
+    if (product.min_stock != null && stock <= minStock) return <span className="badge warning">{stock} — Bajo mínimo</span>
+    return <span className="badge success">{stock}</span>
 }
 
 export const MovementBadge = ({ type }: { type: string }) => (
-    <span className={type === "ENTRY" ? "badge success" : "badge warning"}>{type === "ENTRY" ? "Entrada" : "Salida"}</span>
+    <span className={type === "entrada" ? "badge success" : "badge warning"}>{type === "entrada" ? "Entrada" : "Salida"}</span>
 )
 
-export const TextInput = ({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) => (
+export const TextInput = ({ label, value, onChange, type = "text", disabled }: { label: string; value: string; onChange: (value: string) => void; type?: string; disabled?: boolean }) => (
     <label className="field">
         {label}
-        <input type={type} value={value} onChange={(event) => onChange(event.target.value)} />
+        <input type={type} value={value} onChange={(event) => onChange(event.target.value)} disabled={disabled} />
     </label>
 )
 
@@ -157,7 +165,7 @@ export const SelectInput = ({
     <label className="field">
         {label}
         <select value={value} onChange={(event) => onChange(event.target.value)}>
-            <option value="">{allowEmpty ? "Sin seleccionar" : "Selecciona una opcion"}</option>
+            <option value="">{allowEmpty ? "Sin seleccionar" : "Selecciona una opción"}</option>
             {options.map(([optionValue, optionLabel]) => (
                 <option key={String(optionValue)} value={String(optionValue)}>
                     {optionLabel}
@@ -175,7 +183,7 @@ export const AppModal = ({ isOpen, title, children, onClose }: { isOpen: boolean
             <section className="modal" onClick={(event) => event.stopPropagation()}>
                 <div className="modal-header">
                     <h2>{title}</h2>
-                    <button className="icon-button" onClick={onClose}>x</button>
+                    <button className="icon-button" onClick={onClose} title="Cerrar"><X size={18} /></button>
                 </div>
                 {children}
             </section>

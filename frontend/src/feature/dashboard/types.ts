@@ -1,4 +1,4 @@
-export type Tab = "dashboard" | "products" | "movements" | "providers" | "catalogs" | "warehouses" | "users"
+export type Tab = "dashboard" | "products" | "movements" | "providers" | "catalogs" | "warehouses" | "users" | "reports"
 
 export type CatalogKind = "categories" | "brands"
 
@@ -27,6 +27,7 @@ export type SimpleForm = {
 }
 
 export type UserForm = {
+    users_id?: number
     name: string
     last_name: string
     email: string

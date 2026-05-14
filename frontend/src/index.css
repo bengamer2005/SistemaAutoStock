@@ -459,6 +459,10 @@ tr:last-child td {
     border-bottom: 0;
 }
 
+tbody tr:hover td {
+    background: #f4f8f6;
+}
+
 .empty-cell,
 .loading-state {
     padding: 42px 16px;
@@ -490,6 +494,11 @@ tr:last-child td {
 .badge.muted {
     color: #667085;
     background: #eef0f3;
+}
+
+.badge.danger {
+    color: #dc2626;
+    background: #fef2f2;
 }
 
 .row-actions {

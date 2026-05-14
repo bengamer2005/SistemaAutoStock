@@ -96,8 +96,8 @@ export const validateRequired = (fields: string[]) => {
 
 // Limita intentos de login para proteger contra ataques de fuerza bruta
 export const loginLimiter = rateLimit({
-    windowMs: 1* 60 * 1000, 
-    max: 3,                   
+    windowMs: 1 * 60 * 1000,
+    max: 3,
     standardHeaders: true,
     legacyHeaders: false,
     message: {
